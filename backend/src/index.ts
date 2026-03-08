@@ -3,6 +3,9 @@ import cors from 'cors'
 import { env } from './config/env.js'
 import { rateLimiter } from './middleware/rateLimiter.js'
 import { errorHandler } from './middleware/errorHandler.js'
+import { generateRouter } from './routes/generate.js'
+import { sessionsRouter } from './routes/sessions.js'
+import { tokensRouter } from './routes/tokens.js'
 
 const app = express()
 
@@ -29,10 +32,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// API 라우트 (Phase 4에서 추가 예정)
-// app.use('/api/generate', generateRouter)
-// app.use('/api/sessions', sessionsRouter)
-// app.use('/api/tokens', tokensRouter)
+// API 라우트
+app.use('/api/generate', generateRouter)
+app.use('/api/sessions', sessionsRouter)
+app.use('/api/tokens', tokensRouter)
 
 // 글로벌 에러 핸들러 (반드시 마지막에 등록)
 app.use(errorHandler)
