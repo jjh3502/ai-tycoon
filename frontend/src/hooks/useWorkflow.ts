@@ -6,6 +6,7 @@ interface WorkflowState {
   // 상태
   status: SessionStatus | 'idle'
   sessionId: string | null
+  lastInstruction: string      // 마지막 지시 (재시도용)
   pipeline: PipelineState | null
   files: FileOutput[]
   clarificationQuestions: string[]
@@ -15,6 +16,7 @@ interface WorkflowState {
 
   // 액션
   run: (instruction: string) => Promise<void>
+  retry: () => Promise<void>   // 같은 지시로 재시도
   submitClarification: (clarification: string) => Promise<void>
   approveDesign: () => Promise<void>
   reset: () => void
@@ -23,6 +25,7 @@ interface WorkflowState {
 const initialState = {
   status: 'idle' as const,
   sessionId: null,
+  lastInstruction: '',
   pipeline: null,
   files: [],
   clarificationQuestions: [],
@@ -36,10 +39,45 @@ export const useWorkflow = create<WorkflowState>((set, get) => ({
 
   // 새 지시 실행
   run: async (instruction: string) => {
-    set({ ...initialState, isLoading: true, status: 'running' })
+    set({ ...initialState, isLoading: true, status: 'running', lastInstruction: instruction })
 
     try {
       const result = await generateApp({ instruction })
+
+      if (!result.success || !result.data) {
+        set({ isLoading: false, status: 'failed', error: result.error ?? '알 수 없는 오류' })
+        return
+      }
+
+      const data = result.data
+      set({
+        isLoading: false,
+        sessionId: data.sessionId,
+        status: data.status,
+        pipeline: data.pipeline ?? null,
+        files: data.files ?? [],
+        clarificationQuestions: data.clarificationQuestions ?? [],
+        uiDesign: data.uiDesign ?? null,
+        error: null,
+      })
+    } catch (err) {
+      set({
+        isLoading: false,
+        status: 'failed',
+        error: err instanceof Error ? err.message : '네트워크 오류가 발생했습니다',
+      })
+    }
+  },
+
+  // 같은 지시로 재시도
+  retry: async () => {
+    const { lastInstruction } = get()
+    if (!lastInstruction) return
+
+    set({ ...initialState, isLoading: true, status: 'running', lastInstruction })
+
+    try {
+      const result = await generateApp({ instruction: lastInstruction })
 
       if (!result.success || !result.data) {
         set({ isLoading: false, status: 'failed', error: result.error ?? '알 수 없는 오류' })

@@ -21,7 +21,7 @@ export default function App() {
   const {
     status, pipeline, files, isLoading,
     clarificationQuestions, uiDesign,
-    run, submitClarification, approveDesign, reset,
+    run, retry, submitClarification, approveDesign, reset,
   } = useWorkflow()
 
   const [inputOpen, setInputOpen] = useState(false)
@@ -182,7 +182,10 @@ export default function App() {
                   <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
                     <p className="text-red-800 font-semibold mb-2">❌ 작업 중 오류가 발생했습니다</p>
                     <p className="text-red-600 text-sm mb-4">에이전트 카드를 클릭하여 오류 내용을 확인하세요.</p>
-                    <Button variant="secondary" onClick={handleNewApp}>다시 시도</Button>
+                    <div className="flex gap-3 justify-center">
+                      <Button variant="secondary" onClick={handleNewApp}>새 지시 입력</Button>
+                      <Button onClick={() => void retry()} isLoading={isLoading}>같은 내용으로 재시도</Button>
+                    </div>
                   </div>
                 )}
               </>
