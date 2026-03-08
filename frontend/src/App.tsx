@@ -96,7 +96,7 @@ export default function App() {
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
               <span className="text-white text-sm font-bold">AI</span>
             </div>
-            <h1 className="text-lg font-bold text-gray-900">AI 타이쿤</h1>
+            <h1 className="text-lg font-bold text-gray-900">AI 개발회사</h1>
             <span className="text-sm text-gray-400 hidden sm:block">— AI가 만들어주는 내 앱</span>
           </div>
           <Button onClick={handleNewApp} size="sm" disabled={isRunning}>

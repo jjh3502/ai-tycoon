@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Dialog } from '../ui/Dialog.js'
 import { Button } from '../ui/Button.js'
 
@@ -32,6 +32,36 @@ export function InputModal({
   onApprove,
 }: InputModalProps) {
   const [text, setText] = useState('')
+  const [fileError, setFileError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // TXT 파일 업로드 처리
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    setFileError('')
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.name.endsWith('.txt')) {
+      setFileError('TXT 파일만 업로드 가능합니다.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const content = (event.target?.result as string) ?? ''
+      if (content.length > MAX_LENGTH) {
+        setText(content.slice(0, MAX_LENGTH))
+        setFileError(`파일 내용이 ${MAX_LENGTH}자를 초과하여 앞부분만 불러왔습니다.`)
+      } else {
+        setText(content)
+      }
+    }
+    reader.onerror = () => setFileError('파일을 읽는 중 오류가 발생했습니다.')
+    reader.readAsText(file, 'utf-8')
+
+    // 같은 파일 재업로드 가능하도록 초기화
+    e.target.value = ''
+  }
 
   function handleSubmit() {
     const trimmed = text.trim()
@@ -111,9 +141,35 @@ export function InputModal({
         <p className="text-sm text-gray-500">
           만들고 싶은 앱을 자유롭게 설명해주세요. AI 팀이 자동으로 기획하고 개발합니다.
         </p>
+
+        {/* TXT 파일 업로드 */}
+        <div className="flex items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".txt"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm border border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            TXT 파일 불러오기
+          </button>
+          {fileError && <p className="text-xs text-amber-600">{fileError}</p>}
+          {!fileError && text.length > 0 && (
+            <p className="text-xs text-green-600">파일 내용이 입력창에 불러와졌습니다.</p>
+          )}
+        </div>
+
         <textarea
           className="w-full border border-gray-300 rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          rows={5}
+          rows={6}
           placeholder="예) 직원 10명의 근태를 관리하는 앱 만들어줘. 출퇴근 시간 기록하고 월별 통계 볼 수 있으면 좋겠어."
           value={text}
           onChange={(e) => setText(e.target.value.slice(0, MAX_LENGTH))}
@@ -123,8 +179,8 @@ export function InputModal({
           autoFocus
         />
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">
-            {text.length} / {MAX_LENGTH} · Ctrl+Enter로 제출
+          <span className={`text-xs ${text.length >= MAX_LENGTH ? 'text-red-500' : 'text-gray-400'}`}>
+            {text.length.toLocaleString()} / {MAX_LENGTH.toLocaleString()} · Ctrl+Enter로 제출
           </span>
           <Button onClick={handleSubmit} isLoading={isLoading} disabled={!text.trim()}>
             🚀 앱 만들기
