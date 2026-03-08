@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { getSessions, getSession } from '../lib/api.js'
+import { getSessions, getSession, deleteSession as deleteSessionApi } from '../lib/api.js'
 import type { Session } from '../types/index.js'
 
 interface SessionsState {
@@ -12,6 +12,7 @@ interface SessionsState {
   // 액션
   fetchSessions: () => Promise<void>
   selectSession: (id: string) => Promise<void>
+  removeSession: (id: string) => Promise<boolean>
   clearSelection: () => void
 }
 
@@ -48,6 +49,24 @@ export const useSessions = create<SessionsState>((set) => ({
       }
     } catch {
       set({ isLoading: false, error: '네트워크 오류가 발생했습니다' })
+    }
+  },
+
+  // 세션 삭제 (성공 여부 반환)
+  removeSession: async (id: string) => {
+    try {
+      const result = await deleteSessionApi(id)
+      if (result.success) {
+        // 목록에서 즉시 제거, 선택된 세션이면 선택 해제
+        set((state) => ({
+          sessions: state.sessions.filter((s) => s.id !== id),
+          selectedSession: state.selectedSession?.id === id ? null : state.selectedSession,
+        }))
+        return true
+      }
+      return false
+    } catch {
+      return false
     }
   },
 

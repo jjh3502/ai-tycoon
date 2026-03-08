@@ -49,6 +49,11 @@ export async function getSession(id: string): Promise<ApiResponse<Session>> {
   return fetchApi<Session>(`/api/sessions/${id}`)
 }
 
+// 세션 삭제
+export async function deleteSession(id: string): Promise<ApiResponse<null>> {
+  return fetchApi<null>(`/api/sessions/${id}`, { method: 'DELETE' })
+}
+
 // 토큰 사용량 조회
 export async function getTokenUsage(): Promise<ApiResponse<TokenUsage>> {
   return fetchApi<TokenUsage>('/api/tokens')

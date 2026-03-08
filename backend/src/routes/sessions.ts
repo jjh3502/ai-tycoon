@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getSession, listSessions } from '../lib/sessionStore.js'
+import { getSession, listSessions, deleteSession } from '../lib/sessionStore.js'
 import type { ApiResponse, Session } from '../types/index.js'
 
 export const sessionsRouter = Router()
@@ -30,6 +30,26 @@ sessionsRouter.get('/:id', (req, res) => {
   const response: ApiResponse<Session> = {
     success: true,
     data: session,
+  }
+  res.json(response)
+})
+
+// DELETE /api/sessions/:id — 세션 삭제
+sessionsRouter.delete('/:id', (req, res) => {
+  const deleted = deleteSession(req.params.id)
+
+  if (!deleted) {
+    const response: ApiResponse<never> = {
+      success: false,
+      error: '세션을 찾을 수 없습니다',
+    }
+    res.status(404).json(response)
+    return
+  }
+
+  const response: ApiResponse<null> = {
+    success: true,
+    data: null,
   }
   res.json(response)
 })

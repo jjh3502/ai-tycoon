@@ -17,7 +17,7 @@ const AGENT_ORDER: AgentName[] = ['manager', 'planner', 'designer', 'developer',
 
 export default function App() {
   const { usage, fetch: fetchTokens } = useTokens()
-  const { sessions, selectedSession, fetchSessions, selectSession, clearSelection } = useSessions()
+  const { sessions, selectedSession, fetchSessions, selectSession, removeSession, clearSelection } = useSessions()
   const {
     status, pipeline, files, isLoading,
     clarificationQuestions, uiDesign,
@@ -120,6 +120,7 @@ export default function App() {
               sessions={sessions}
               selectedId={selectedSession?.id ?? null}
               onSelect={handleSelectSession}
+              onDelete={removeSession}
             />
           </div>
         </aside>

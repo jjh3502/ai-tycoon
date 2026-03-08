@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { v4 as uuidv4 } from 'uuid'
@@ -120,4 +120,14 @@ export function listSessions(): Session[] {
   return sessions.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   )
+}
+
+// 세션 삭제
+export function deleteSession(id: string): boolean {
+  const filePath = sessionFilePath(id)
+  if (!existsSync(filePath)) {
+    return false
+  }
+  unlinkSync(filePath)
+  return true
 }
