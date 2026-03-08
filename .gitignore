@@ -20,9 +20,10 @@ build/
 .shrimp/
 **/.shrimp/
 
-# 세션 저장소 (서버 런타임 데이터)
+# 서버 런타임 데이터
 backend/sessions/
 backend/tokens.json
+backend/data/
 
 # 로그
 *.log
