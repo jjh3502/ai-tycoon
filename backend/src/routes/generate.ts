@@ -15,6 +15,7 @@ const generateSchema = z.object({
     .max(2000, '지시사항은 최대 2000자까지 입력 가능합니다'),
   sessionId: z.string().uuid().optional(),
   clarification: z.string().max(2000).optional(),
+  approved: z.boolean().optional(),   // UI 설계 승인 여부
 })
 
 // POST /api/generate
@@ -41,11 +42,11 @@ generateRouter.post('/', async (req, res, next) => {
       session = createSession(body.instruction)
     }
 
-    // 파이프라인 비동기 실행
-    const updatedSession = await runWorkflow(session, body.clarification)
+    // 파이프라인 실행
+    const updatedSession = await runWorkflow(session, body.clarification, body.approved)
     const tokenUsage = getUsage()
 
-    // 추가 질문 필요 여부
+    // 추가 질문 필요
     if (updatedSession.status === 'clarifying') {
       const response: ApiResponse<GenerateResponseData> = {
         success: true,
@@ -53,7 +54,27 @@ generateRouter.post('/', async (req, res, next) => {
           sessionId: updatedSession.id,
           status: 'clarifying',
           needsClarification: true,
+          needsApproval: false,
           clarificationQuestions: updatedSession.clarificationQuestions ?? [],
+          tokenUsage,
+        },
+      }
+      res.status(200).json(response)
+      return
+    }
+
+    // UI 설계 승인 대기
+    if (updatedSession.status === 'awaiting_approval') {
+      const uiDesign = updatedSession.pipeline.agents.designer.output ?? ''
+      const response: ApiResponse<GenerateResponseData> = {
+        success: true,
+        data: {
+          sessionId: updatedSession.id,
+          status: 'awaiting_approval',
+          needsClarification: false,
+          needsApproval: true,
+          uiDesign,
+          pipeline: updatedSession.pipeline,
           tokenUsage,
         },
       }
@@ -68,6 +89,7 @@ generateRouter.post('/', async (req, res, next) => {
         sessionId: updatedSession.id,
         status: updatedSession.status,
         needsClarification: false,
+        needsApproval: false,
         pipeline: updatedSession.pipeline,
         files: updatedSession.files,
         tokenUsage,

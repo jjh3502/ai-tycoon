@@ -2,7 +2,13 @@
 export type AgentStatus = 'idle' | 'working' | 'reviewing' | 'done' | 'error'
 
 // 세션 상태 타입
-export type SessionStatus = 'pending' | 'clarifying' | 'running' | 'completed' | 'failed'
+export type SessionStatus =
+  | 'pending'
+  | 'clarifying'
+  | 'running'
+  | 'awaiting_approval'  // 디자이너 완료 후 사장님 승인 대기
+  | 'completed'
+  | 'failed'
 
 // 에이전트 이름 타입
 export type AgentName = 'manager' | 'planner' | 'designer' | 'developer' | 'qa'
@@ -74,6 +80,7 @@ export interface GenerateRequest {
   instruction: string
   sessionId?: string             // 재시도 시 기존 세션 ID
   clarification?: string         // 추가 질문에 대한 사용자 답변
+  approved?: boolean             // UI 설계 승인 여부
 }
 
 // API 응답 타입
@@ -88,7 +95,9 @@ export interface GenerateResponseData {
   sessionId: string
   status: SessionStatus
   needsClarification: boolean
+  needsApproval: boolean         // UI 설계 승인 요청 여부
   clarificationQuestions?: string[]
+  uiDesign?: string              // 승인 요청 시 표시할 UI 설계 문서
   pipeline?: PipelineState
   files?: FileOutput[]
   tokenUsage?: TokenUsage
