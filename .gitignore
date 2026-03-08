@@ -1,0 +1,39 @@
+# 의존성
+node_modules/
+**/node_modules/
+
+# 환경변수 (절대 커밋 금지)
+.env
+**/.env
+!**/.env.example
+
+# 빌드 산출물
+dist/
+**/dist/
+build/
+**/build/
+
+# TypeScript 컴파일 캐시
+*.tsbuildinfo
+
+# Shrimp Task Manager 데이터
+.shrimp/
+**/.shrimp/
+
+# 세션 저장소 (서버 런타임 데이터)
+backend/sessions/
+backend/tokens.json
+
+# 로그
+*.log
+npm-debug.log*
+
+# 에디터
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
